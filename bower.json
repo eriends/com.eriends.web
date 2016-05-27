@@ -1,0 +1,23 @@
+{
+  "name": "com.eriends.web",
+  "description": "study english with Friends.",
+  "main": "index.js",
+  "authors": [
+    "Eric yi <yi_xiaobin@163.com>"
+  ],
+  "license": "ISC",
+  "moduleType": [],
+  "homepage": "",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "devDependencies": {
+    "react": "^15.0.2",
+    "babel": "*",
+    "prism": "^1.5.0"
+  }
+}

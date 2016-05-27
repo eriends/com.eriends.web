@@ -1,0 +1,8 @@
+node_modules
+bower_components
+target
+.tmp
+dist
+*.bak
+vendor
+/src/movies
