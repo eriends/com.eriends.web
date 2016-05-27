@@ -14,7 +14,6 @@ var webpack             = require('webpack');
 var webpackConfig       = require('./webpack.config');
 var WebpackDevServer    = require('webpack-dev-server');
 
-
 var option = {
   dist: 'dist',
   src: 'src',
@@ -25,7 +24,7 @@ var option = {
   },
 
   proxy: {
-    host: 'localhost',
+    host: '0.0.0.0',
     port: 10006
   }
 };
@@ -119,6 +118,11 @@ gulp.task('server', function() {
       directoryListing: true,
       defaultFile: 'index.html',
       open: true,
+      proxies: [{
+        source: '/api', 
+        target: 'http://' + option.proxy.host + ':' + option.proxy.port + '/api',
+        changeOrigin: true
+      }],
       middleware: [
         getStatic({route: /^\/views/, handle: serveStatic(option.src)}),
         getStatic({route: /^\/styles/, handle: serveStatic(option.src)}),
@@ -154,3 +158,4 @@ gulp.task('browser-sync', function() {
 });
 
 gulp.task('default', ['clean', 'server', 'watch', 'openbrowser']);
+
