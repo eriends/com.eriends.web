@@ -4,5 +4,4 @@ target
 .tmp
 dist
 *.bak
-vendor
-/src/movies
+/src/video

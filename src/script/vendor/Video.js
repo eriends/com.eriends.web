@@ -1,9 +1,14 @@
+import React from "react"
+import ReactDOM from 'react-dom'
+import path from "path"
+import { formatTime } from "./lib/dateTime.js"
 
 var videoEvents = ["play","pause","playing","abort","progress","ratechange","canplay","canplaythrough","durationchange","emptied","ended","loadeddata","loadedmetadata","loadstart","seeked","seeking","stalled","suspend","timeupdate","volumechange","waiting","error","encrypted","mozaudioavailable","interruptbegin","interruptend"];
 
 class Video extends React.Component {
-	constructor(){
-		super()
+
+	constructor(props,context){
+		super(props,context)
 		// store all public handler here, and return this api object to parent component;
 		this.api = {}; 
 		var pubHandlers = ["togglePlay","setTime","fullscreen","volume"];
@@ -16,13 +21,14 @@ class Video extends React.Component {
 		handlers.forEach( name => this["_"+name] = this["_"+name].bind(this) )
 		
 	}
+
 	componentDidMount(){
 		/**
 		 * register some video event listener here;
 		 */
 		this.$wraper = ReactDOM.findDOMNode(this);
 		var $video = this.$video = this.api.$video = ReactDOM.findDOMNode( this.refs.video )
-// window.$video = $video;
+		// window.$video = $video;
 		$video.addEventListener("loadedmetadata", this._metaDataLoaded )
 		// this update interval gap is too big make progressbar not snapy
 		// $video.addEventListener("timeupdate", this._timeupdate )
@@ -31,6 +37,7 @@ class Video extends React.Component {
 
 		if( this.props.autoPlay && !this.seekbarUpdateTimer ) this.seekbarUpdateInterval();
 	}
+
 	/**
 	 * after metaData Loaded we can get video dimentions and set width,height of video wraper;
 	 */
@@ -39,14 +46,18 @@ class Video extends React.Component {
 		if(this.props.metaDataLoaded && typeof this.props.metaDataLoaded == "function" ){
 			this.props.metaDataLoaded( this.api );
 		}
+
 		// calculate width of seek bar and progress;
 		this.$seekbarWraper = ReactDOM.findDOMNode( this.refs.seekbarWraper );
 		this.setState({duration: formatTime(this.$video.duration) })
 	}
+
 	seekbarUpdateInterval(){
 		this.seekbarUpdateTimer = setInterval( this._timeupdate, 80);
 	}
+
 	_setTime( percent, isPercent ){
+		if(this.state.seekDisabled) return;
 		if( isPercent && percent>100) return;
 		var time = isPercent? percent * this.$video.duration / 100 : percent;
 		//console.log("change time", time )
@@ -55,8 +66,10 @@ class Video extends React.Component {
 		}else{
 			this.$video.currentTime = time;
 		}
+
 		this.setState({seekProgress: percent });
 	}
+
 	// update seek bar width;
 	_timeupdate(e){
 		var percent = this.$video.currentTime / this.$video.duration * 100;
@@ -69,9 +82,11 @@ class Video extends React.Component {
 		}
 		this.setState(newState);
 	}
+
 	_durationchange(){
 
 	}
+
 	// loading progress bar
 	_progress(e){
 		var buf = this.$video.buffered;
@@ -81,6 +96,7 @@ class Video extends React.Component {
 		}
 		this.setState({loadedProgress: total / this.$video.duration * 100 })
 	}
+
 	_togglePlay(){
 		//console.log("toggle play")
 		if( !this.seekbarUpdateTimer ) this.seekbarUpdateInterval();
@@ -94,12 +110,14 @@ class Video extends React.Component {
 			this.setState({isPlaying: false})
 		}
 	}
+
 	_fullscreen(e){
 		var apis = ["requestFullScreen","mozRequestFullScreen","webkitRequestFullscreen","msRequestFullscreen"];
 		for(var ii=0; ii<apis.length; ii++){
 			if(this.$video[apis[ii]]) return this.$video[apis[ii]]();
 		}
 	}
+
 	_volume( val ){
 		if( val <= 0) val = 0;
 		if(val >1) val = 1;
@@ -110,6 +128,7 @@ class Video extends React.Component {
 		};
 		this.setState(state);
 	}
+
 	_setSubtitle( index ){
 		//console.log("_setSubtitle",index)
 		if( this.$video.textTracks[this.state.activeSubtitle] ) 
@@ -117,6 +136,7 @@ class Video extends React.Component {
 		this.$video.textTracks[index].mode = "showing";
 		this.setState({activeSubtitle: index })
 	}
+
 	$getSubtitleTracksMenu(){
 		var $menuItems = []
 		if( !this.$video || this.$video.textTracks.length <= 0 ) return $menuItems;
@@ -134,6 +154,7 @@ class Video extends React.Component {
 		)
 		return this.subTitleMenu
 	}
+
 	// generate subtitle tracks: <track >
 	$getSubtitleTracks( subtitles ){
 		if(!Array.isArray(subtitles)) return "";
@@ -141,11 +162,12 @@ class Video extends React.Component {
 		for(var ii=0;ii<subtitles.length;ii++){
 			let track = subtitles[ii];
 			$tracks.push(
-				<track src={track.src} kind="subtitles" srclang={track.lang} label={track.label} key={ii}/>
+				<track src={track.src} kind="subtitles" srcLang={track.lang} label={track.label} key={ii}/>
 			)
 		}
 		return  $tracks
 	}
+
 	$getSource( sources ){
 		if(!Array.isArray(sources)) return [];
 		var $sources = [];
@@ -158,6 +180,7 @@ class Video extends React.Component {
 		}
 		return $sources;
 	}
+
 	render(){
 		const { subtitles, loop, autoPlay, poster,preload, sources, controlPanelStyle, autoHideControls } = this.props
 		//html5 video options
@@ -215,7 +238,9 @@ class Video extends React.Component {
 			</div>
 		)	
 	}
+
 	componentWillMount(){
+		
 		this.state = {
 			isPlaying: this.props.autoPlay?true: false,
 			isMuted: false,
@@ -225,7 +250,9 @@ class Video extends React.Component {
 			seekProgress: 0,// how much has played
 			volume: this.props.volume,
 			activeSubtitle:null,
+			seekDisabled: this.props.seekDisabled?true: false,
 		}
+
 		// var fill = this.props.controlPanelStyle == "overlay"?"#ffffff":"#3FBA97";
 		var fill = "#ffffff";
 		this.icons = {}
@@ -278,9 +305,11 @@ class Video extends React.Component {
 			</svg>
 		)
 	}
+
 	componentWillUnmount(){
 		if(this.seekbarUpdateTimer) clearInterval( this.seekbarUpdateTimer );
 	}
+
 }
 
 Video.propTypes = {
@@ -301,6 +330,7 @@ Video.propTypes = {
 	width: 							React.PropTypes.string,
 	height: 						React.PropTypes.string,
 	volume: 						React.PropTypes.number,
+	seekDisabled: 					React.PropTypes.bool,
 
 	// overlayStyle: 			React.PropTypes.object,
 }
@@ -314,4 +344,8 @@ Video.defaultProps = {
 	mute: 					false,
 	controlPanelStyle: "overlay",
 	preload: 				"auto",
+	seekDisabled: false,
 }
+
+export default Video
+

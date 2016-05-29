@@ -11,8 +11,21 @@ var parseurl            = require('parseurl');
 var babel               = require('gulp-babel');
 var gutil               = require('gulp-util');
 var webpack             = require('webpack');
-var webpackConfig       = require('./webpack.config');
+var gulpif              = require('gulp-if');
+var babelify            = require('babelify');
+var uglify              = require('gulp-uglify');
 var WebpackDevServer    = require('webpack-dev-server');
+var rename              = require('gulp-rename');
+var source              = require('vinyl-source-stream');
+var browserify          = require('browserify');
+var gbrowserify         = require('gulp-browserify');
+/**
+ * parse cli options: 
+ * --app=editor or client
+ * --env=development or production
+ */
+var argv                = require('minimist')(process.argv.slice(2));
+var webpackConfig       = require('./webpack.config');
 
 var option = {
   dist: 'dist',
@@ -30,10 +43,25 @@ var option = {
 };
 
 var src = {
-  images: option.src + '/images',
-  views: option.src + '/views',
-  styles: option.src + '/styles',
-  scripts: option.src + '/scripts'
+  image: option.src + '/image',
+  view: option.src + '/view',
+  style: option.src + '/style',
+  script: option.src + '/script'
+};
+
+var vendor = {
+  script: {
+    path: src.script + '/vendor/lib',
+    src: [
+      'node_modules/react-h5-video/src/utils/dateTime.js'
+    ]
+  },
+  css: [
+    'bower_components/bootstrap/dist/css/bootstrap.min.css'
+  ],
+  less: [
+    'bower_components/bootstrap/less/bootstrap.less'
+  ]
 };
 
 gulp.task('clean', function (done) {
@@ -43,8 +71,20 @@ gulp.task('clean', function (done) {
   .pipe(clean({force: true}));
 })
 
+gulp.task('vendor.script.clean', function (done) {
+  return gulp.src(vendor.script.path, {
+    read: false
+  })
+  .pipe(clean({force: true}));
+})
+
+gulp.task("vendor.script.copy", function () {
+  gulp.src(vendor.script.src)
+  .pipe(gulp.dest(src.script + '/vendor/lib'))
+})
+
 gulp.task('eslint', function() {
-  return gulp.src(app.scripts + '/**/**/*.js')
+  return gulp.src(app.script + '/**/**/*.js')
     .pipe(eslint({
       baseoptionig: {
         "ecmaFeatures": {
@@ -67,7 +107,7 @@ function getStatic(opts) {
 }
 
 gulp.task('babel', () => {
-  return gulp.src(src.scripts + '/*.js')
+  return gulp.src(src.script + '/*.js')
     .pipe(babel())
     .pipe(gulp.dest('target'));
 });
@@ -124,10 +164,10 @@ gulp.task('server', function() {
         changeOrigin: true
       }],
       middleware: [
-        getStatic({route: /^\/views/, handle: serveStatic(option.src)}),
-        getStatic({route: /^\/styles/, handle: serveStatic(option.src)}),
-        getStatic({route: /^\/scripts/, handle: serveStatic(option.src)}),
-        getStatic({route: /^\/movies/, handle: serveStatic(option.src)}),
+        getStatic({route: /^\/view/, handle: serveStatic(option.src)}),
+        getStatic({route: /^\/style/, handle: serveStatic(option.src)}),
+        getStatic({route: /^\/script/, handle: serveStatic(option.src)}),
+        getStatic({route: /^\/video/, handle: serveStatic(option.src)}),
         getStatic({route: /^\/bower_components/, handle: serveStatic('./')}),
         getStatic({route: /^\/node_modules/, handle: serveStatic('./')})
       ]
@@ -135,8 +175,8 @@ gulp.task('server', function() {
 });
 
 gulp.task('watch', function () {
-  gulp.watch(src.scripts + '/**/*.{js,jsx}', ['concat']);
-  gulp.watch([src.views + '/*.html'], ['html']);
+  gulp.watch(src.script + '/**/*.{js,jsx}', ['concat']);
+  gulp.watch([src.view + '/*.html'], ['html']);
 });
 
 gulp.task('bower', function() {
@@ -144,6 +184,32 @@ gulp.task('bower', function() {
     .pipe(gulp.dest('bower_components'))
 });
 
+gulp.task('demo.build',function(){
+	gulp.src(src.script + '/demo.js')
+	.pipe(gbrowserify({
+		debug: argv.env !== 'production',
+		insertGlobals : true,
+		transform: [
+			babelify.configure({
+			  // optional: ["es7.asyncFunctions","runtime"]
+			})
+		],
+	}))
+	.pipe( // only minify in production
+		gulpif(argv.env === 'production', uglify({ compress:true, mangle:true}))
+	) 
+	.on('error', handleError)
+	.pipe(rename('demo.app.js'))
+	.pipe(gulp.dest(src.script))
+});
+
+gulp.task('demo.open', function() {
+  opn( 'http://' + option.server.host + ':' + option.server.port + '/view/demo.html' );
+});
+
+gulp.task('demo.default', ['vendor.script.clean'], function () {
+  gulp.start('vendor.script.copy', 'demo.build', 'server', 'demo.open');
+});
 
 gulp.task('openbrowser', function() {
   opn( 'http://' + option.server.host + ':' + option.server.port );
@@ -159,3 +225,7 @@ gulp.task('browser-sync', function() {
 
 gulp.task('default', ['clean', 'server', 'watch', 'openbrowser']);
 
+function handleError(err) {
+  console.log(err.toString());
+  this.emit('end');
+}
