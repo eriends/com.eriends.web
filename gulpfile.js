@@ -26,6 +26,7 @@ var concat              = require('gulp-concat');
  * --env=development or production
  */
 var argv                = require('minimist')(process.argv.slice(2));
+var gwebpack            = require('gulp-webpack');
 var webpackConfig       = require('./webpack.config');
 
 var option = {
@@ -48,6 +49,13 @@ var src = {
   view: option.src + '/view',
   style: option.src + '/style',
   script: option.src + '/script'
+};
+
+var dist = {
+  image: option.dist + '/image',
+  view: option.dist + '/view',
+  style: option.dist + '/style',
+  script: option.dist + '/script'
 };
 
 var vendor = {
@@ -227,10 +235,56 @@ gulp.task('browser-sync', function() {
   });
 });
 
+gulp.task('dist.image.copy', function () {
+  gulp.src(src.image + "/**/*")
+  .pipe(gulp.dest(dist.image))
+})
+
+gulp.task('dist.style.vendor.copy', function () {
+  gulp.src("node_modules/react-h5-video/lib/react-html5-video.css")
+  .pipe(gulp.dest(dist.style))
+})
+
+gulp.task('dist.style.copy', ['dist.style.vendor.copy'], function () {
+  gulp.src(src.style + "/**/*.css")
+  .pipe(gulp.dest(dist.style))
+})
+
+gulp.task('dist.script.vendor.copy', function () {
+  gulp.src(src.script + "/vendor/**/*")
+  .pipe(gulp.dest(dist.script + '/vendor'))
+})
+
+gulp.task('script.build', function() {
+  return gulp.src(src.script + '/entry.js')
+    .pipe(gwebpack(webpackConfig))
+    .pipe(gulp.dest(src.script));
+});
+
+gulp.task('dist.script.copy', ['script.build'], function () {
+  gulp.src(src.script + "/main.bundle.js")
+  .pipe(gulp.dest(dist.script))
+})
+
+gulp.task('dist.view.copy', function () {
+  gulp.src(src.view + "/**/*")
+  .pipe(gulp.dest(dist.view))
+})
+
+gulp.task('dist.page.copy', ['dist.view.copy'], function () {
+  gulp.src(option.src + "/index.html")
+  .pipe(gulp.dest(option.dist))
+})
+
 gulp.task('video.build', compile_script('video'));
 
 //gulp.task('default', ['clean', 'video.build', 'server', 'watch', 'openbrowser']);
-gulp.task('default', ['clean', 'video.build', 'server', 'openbrowser']);
+gulp.task('default', ['vendor.script.copy', 'video.build', 'server', 'openbrowser']);
+
+
+gulp.task('build', ['clean'], function () {
+  gulp.start('vendor.script.copy', 'dist.image.copy', 'dist.style.copy', 'dist.script.copy', 'dist.page.copy');
+});
 
 function handleError(err) {
   console.log(err.toString());

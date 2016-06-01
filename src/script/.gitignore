@@ -1,2 +1,4 @@
+*.bundle.js
+*.bundle.css
 *.app.js
 /vendor/lib

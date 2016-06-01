@@ -53,14 +53,14 @@ class App extends React.Component {
 		this.setState({controlPanelStyle: style });
 	}
 	render(){
-		var sources = ["../video/video.mp4","../video/video.webm","../video/video.ogv"]
+		var sources = ["video/video.mp4","video/video.webm","video/video.ogv"]
 		var subtitles = [
 			{
-				src:"../video/captions_en.vtt",
+				src:"video/captions_en.vtt",
 				lang:"en",label:"English"
 			},
 			{
-				src:"../video/captions_zh.vtt",
+				src:"video/captions_zh.vtt",
 				lang:"zh",label:"中文"
 			},
 		]
@@ -69,16 +69,16 @@ class App extends React.Component {
 			<div>
 				<header className="clearfix">
 					<div className="container">
-						<h3>老友记</h3>
+						<h3>Friends</h3>
 						<Video 
 							sources={sources} 
 							subtitles={subtitles}
-							poster="../video/poster.png" 
+							poster="video/poster.png" 
 							metaDataLoaded={this.getApi}
 							controls={this.state.showControls}
 							controlPanelStyle={this.state.controlPanelStyle}
 							width="100%"
-							height="100%"
+							height="auto"
 						>
 							<span className="pull-right"><a href="https://github.com/eriends/com.eriends.web" target="_blank">Eriends@github</a></span>
 							<div dangerouslySetInnerHTML={{__html: this.state.content }}></div>
@@ -93,5 +93,4 @@ class App extends React.Component {
 var $app = document.getElementById('video')
 
 ReactDom.render( <App />, $app);
-
 

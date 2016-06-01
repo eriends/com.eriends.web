@@ -153,21 +153,6 @@ body {
 	height: 38px;	
 	display: inline-block;
 }
-.soc_icons ul li a i.fa-facebook {
-	background: #3660A0 url('../image/facebook.png') no-repeat 10px 10px;
-}
-.soc_icons ul li a i.fa-twitter {
-	background: #2CAAE1 url('../image/twitter.png') no-repeat 10px 10px;
-}
-.soc_icons ul li a i.fa-google-plus {
-	background: #DD5644 url('../image/gplus.png') no-repeat 10px 10px;
-}
-.soc_icons ul li a i.fa-pinterest {
-	background: #CC2B27 url('../image/pinterest.png') no-repeat 10px 10px;
-}
-.soc_icons ul li a i.fa-dribbble {
-	background: #EF558F url('../image/dribble.png') no-repeat 10px 10px;
-}
 .soc_icons ul li a:hover{
 	opacity: 0.7;
 }
@@ -240,15 +225,6 @@ body {
 	width: 32px;
 	height: 32px;
 }
-.address li i.fa-map-marker{
-	background: url('../image/map_marker.png') no-repeat 10px 4px;
-}
-.address li i.fa-phone{
-	background: url('../image/call.png') no-repeat 16px 4px;
-}
-.address li i.fa-envelope{
-	background: url('../image/mail.png') no-repeat 10px 4px;
-}
 .address{
 	margin-top: 20px;
 }
@@ -316,7 +292,6 @@ body {
 	height: 32px;
 	border: none;
 	text-indent: 100%;
-	background: url(../image/arrow_up.png) no-repeat center;
 }
 /* start portfolio  */
 
@@ -403,12 +378,6 @@ h2.style{
 	height: 28px;
 	display: inline-block;
 	vertical-align: bottom;
-}
-.blog_list ul li i.fa-calendar-o{
-	background: url('../image/date.png') no-repeat 0px 4px;
-}
-.blog_list ul li i.fa-comment{
-	background: url('../image/coment.png') no-repeat 0px 7px;
 }
 .blog_list li span{
 	font-family: Arial, Geneva,Helvetica, sans-serif;

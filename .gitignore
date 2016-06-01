@@ -2,6 +2,8 @@ node_modules
 bower_components
 target
 .tmp
-dist
+/dist
 *.bak
 /src/video
+*.bundle.js
+*.bundle.css
