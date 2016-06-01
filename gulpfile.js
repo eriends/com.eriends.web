@@ -19,6 +19,7 @@ var rename              = require('gulp-rename');
 var source              = require('vinyl-source-stream');
 var browserify          = require('browserify');
 var gbrowserify         = require('gulp-browserify');
+var concat              = require('gulp-concat');
 /**
  * parse cli options: 
  * --app=editor or client
@@ -184,8 +185,8 @@ gulp.task('bower', function() {
     .pipe(gulp.dest('bower_components'))
 });
 
-gulp.task('demo.build',function(){
-	gulp.src(src.script + '/demo.js')
+function compile_script(name) {
+  gulp.src(src.script + '/' + name + '.js')
 	.pipe(gbrowserify({
 		debug: argv.env !== 'production',
 		insertGlobals : true,
@@ -199,9 +200,12 @@ gulp.task('demo.build',function(){
 		gulpif(argv.env === 'production', uglify({ compress:true, mangle:true}))
 	) 
 	.on('error', handleError)
-	.pipe(rename('demo.app.js'))
+	.pipe(rename(name + '.app.js'))
 	.pipe(gulp.dest(src.script))
-});
+
+}
+
+gulp.task('demo.build', compile_script('demo'));
 
 gulp.task('demo.open', function() {
   opn( 'http://' + option.server.host + ':' + option.server.port + '/view/demo.html' );
@@ -223,7 +227,10 @@ gulp.task('browser-sync', function() {
   });
 });
 
-gulp.task('default', ['clean', 'server', 'watch', 'openbrowser']);
+gulp.task('video.build', compile_script('video'));
+
+//gulp.task('default', ['clean', 'video.build', 'server', 'watch', 'openbrowser']);
+gulp.task('default', ['clean', 'video.build', 'server', 'openbrowser']);
 
 function handleError(err) {
   console.log(err.toString());
